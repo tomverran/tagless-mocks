@@ -54,8 +54,8 @@ val stubk = StubK[SomeAlg, Option]
 stubk.findUsers(1, "Tom") // will return None
 
 import cats.instances.list._
-val stub = Stub[SomeAlg, Id]
-stub.findUsers(1, "Tom") // will return an empty list
+val stub = Stub[SomeAlg, Option]
+stub.findUsers(1, "Tom") // will return Some(List.empty)
 ```
 
 

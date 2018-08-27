@@ -30,5 +30,32 @@ val result = spy.saveUser(id = 1, name = "Tom")
 // result: String = SomeAlg.saveUser(1,Tom)
 ```
 
+#### Stubs
+
+Stubs return an empty value when called. In the world of Java this tends to be `null` but cats provides the `Monoid` typeclass for this
+so there are two variants of stubs available
+
+- StubK, for when your effect type is directly a `MonoidK` (like `Option`)
+- Stub, which needs an `Applicative` for your effect type and a `Monoid` for all your return types
+
+e.g. if you have something like
+
+```scala
+trait SomeAlg[F[_]] {
+  def findUsers(id: Int, name: String): F[List[String]]
+}
+```
+
+You can do the following
+
+```scala
+import cats.instances.option._
+val stubk = StubK[SomeAlg, Option]
+stubk.findUsers(1, "Tom") // will return None
+
+import cats.instances.list._
+val stub = Stub[SomeAlg, Id]
+stub.findUsers(1, "Tom") // will return an empty list
+```
 
 

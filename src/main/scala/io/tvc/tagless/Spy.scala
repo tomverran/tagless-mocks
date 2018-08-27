@@ -27,12 +27,17 @@ object Spy {
 
     val traitInfo = tt.tpe.typeSymbol.asClass
     val methods = tt.tpe.decls.collect { case d if d.isMethod && d.isAbstract => d.asMethod }
-    assert(traitInfo.isAbstract, "Only entirely abstract traits are supported")
 
     val methodImplementations = methods.map { method =>
 
       val params: List[List[Tree]] =
         method.paramLists.map(_.map(s => q"val ${s.asTerm.name}: ${s.typeSignature}"))
+
+      val typeParams: List[c.Tree] =
+        method.typeParams.map(tp => internal.typeDef(tp))
+
+      val typeParamStrings =
+        if (typeParams.nonEmpty) s"[${method.typeParams.map(_.asType.name.toString).mkString(",")}]" else ""
 
       val paramStrings: Tree =
         method.paramLists
@@ -41,8 +46,8 @@ object Spy {
           .getOrElse(q"""""""") // poetry
 
       q"""
-         def ${method.name}(...$params): StringK[${method.returnType}] =
-          ${traitInfo.name.toString} + "." + ${method.name.toString} + ...$paramStrings
+         def ${method.name}[..$typeParams](...$params): StringK[${method.returnType}] =
+          ${traitInfo.name.toString} + "." + ${method.name.toString + typeParamStrings} + ...$paramStrings
        """
     }
 

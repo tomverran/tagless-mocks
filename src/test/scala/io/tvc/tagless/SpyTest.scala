@@ -1,5 +1,6 @@
 package io.tvc.tagless
 
+import io.tvc.tagless.Spy.StringK
 import org.scalatest.{Matchers, WordSpec}
 
 import scala.language.higherKinds
@@ -29,9 +30,9 @@ class SpyTest extends WordSpec with Matchers {
       Spy[Test].foo("bar")(3) shouldBe "Test.foo(bar)(3)"
     }
 
-    //"Work for polymorphic functions" in {
-    //  trait Test[F[_]] { def foo[A](a: A): F[Unit] }
-    //  Spy[Test].foo("bar") shouldBe "Test.foo[A](bar)"
-    //}
+    "Work for polymorphic functions" in {
+      trait Test[F[_]] { def foo[A, B, C](a: A): F[Unit] }
+      Spy[Test].foo("bar") shouldBe "Test.foo[A,B,C](bar)"
+    }
   }
 }

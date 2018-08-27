@@ -35,7 +35,10 @@ object Spy {
         method.paramLists.map(_.map(s => q"val ${s.asTerm.name}: ${s.typeSignature}"))
 
       val paramStrings: Tree =
-        method.paramLists.map(pl => concatParams(pl)).reduce((a, b) => q"$a + $b")
+        method.paramLists
+          .map(pl => concatParams(pl))
+          .reduceOption((a, b) => q"$a + $b")
+          .getOrElse(q"""""""") // poetry
 
       q"""
          def ${method.name}(...$params): StringK[${method.returnType}] =
@@ -48,6 +51,7 @@ object Spy {
        import _root_.io.tvc.tagless.Spy.StringK
        new ${traitInfo.name}[StringK] {
           ..$methodImplementations
+          type T = String
        }
      """
     )

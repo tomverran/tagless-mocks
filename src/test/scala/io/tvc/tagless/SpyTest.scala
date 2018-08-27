@@ -1,15 +1,37 @@
 package io.tvc.tagless
 
+import org.scalatest.{Matchers, WordSpec}
+
 import scala.language.higherKinds
 
-object SpyTest extends App {
+class SpyTest extends WordSpec with Matchers {
 
-  case class AccountId(value: String) extends AnyVal
+  "Spy macro" should {
 
-  trait Foo[F[_]] {
-    def bar(what: String, why: Int)(cat: AccountId): F[Unit]
+    "Work for traits with no functions" in {
+      trait Test[F[_]]
+      Spy[Test]
+      succeed
+    }
+
+    "Work for functions with no param lists" in {
+      trait Test[F[_]] { def foo: F[Unit] }
+      Spy[Test].foo shouldBe "Test.foo"
+    }
+
+    "Work for functions with a single param list" in {
+      trait Test[F[_]] { def foo(bar: String): F[Unit] }
+      Spy[Test].foo("bar") shouldBe "Test.foo(bar)"
+    }
+
+    "Work for functions with multiple param lists" in {
+      trait Test[F[_]] { def foo(bar: String)(baz: Int): F[Unit] }
+      Spy[Test].foo("bar")(3) shouldBe "Test.foo(bar)(3)"
+    }
+
+    //"Work for polymorphic functions" in {
+    //  trait Test[F[_]] { def foo[A](a: A): F[Unit] }
+    //  Spy[Test].foo("bar") shouldBe "Test.foo[A](bar)"
+    //}
   }
-
-  val foo = Spy[Foo]
-  println(foo.bar("hi", 3)(AccountId("123")))
 }

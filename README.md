@@ -9,6 +9,15 @@ This library is very WIP indeed, I've never used macros before...
 This library is designed to make testing tagless final Scala programs easier by 
 generating mock intepreters (i.e. mock trait implementations) for your algebras (i.e. traits)
 
+
+#### Planned Features
+
+- A version of Spy that gives you a WriterT somehow
+- Less code duplication
+- A build in Travis
+- Bintray release
+
+
 #### Spies
 
 A `Spy` in mocking parlence is an implementation that does nothing other than record that a particular function was called.

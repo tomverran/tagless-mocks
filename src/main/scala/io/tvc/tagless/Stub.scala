@@ -20,32 +20,10 @@ object Stub {
   ): c.Expr[T[F]] = {
     import c.universe._
 
-    val traitInfo = T.tpe.typeSymbol.asClass
-    val methods = T.tpe.decls.collect { case d if d.isMethod && d.isAbstract => d.asMethod }
-    val applicative = F.tpe
-
-    val methodImplementations = methods.map { method =>
-
-      val params: List[List[Tree]] =
-        method.paramLists.map(_.map(s => q"val ${s.asTerm.name}: ${s.typeSignature}"))
-
-      val typeParams: List[c.Tree] =
-        method.typeParams.map(tp => internal.typeDef(tp))
-
-      q"""
-         def ${method.name}[..$typeParams](...$params) =
-          cats.Applicative[$applicative].pure(cats.Monoid.apply[${method.returnType.typeArgs.head}].empty)
-       """
+    val utils = new Utilities[c.type](c)
+    utils.mapMethods[T, F] { method =>
+      q"""cats.Applicative[${F.tpe.typeConstructor}].pure(cats.Monoid.apply[${method.returnType.typeArgs.head}].empty)"""
     }
-
-    c.Expr(
-      q"""
-       new ${traitInfo.name}[$applicative] {
-          ..$methodImplementations
-          type T = String
-       }
-     """
-    )
   }
 }
 

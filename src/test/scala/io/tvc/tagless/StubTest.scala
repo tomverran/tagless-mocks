@@ -12,8 +12,8 @@ class StubTest extends WordSpec with Matchers {
   "Stub macro" should {
 
     "Work for functions with no param lists" in {
-      trait Test[F[_]] { def foo: F[List[Unit]] }
-      Stub[Test, Id].foo shouldBe List.empty
+      trait Test[F[_]] { def foo(): F[List[Unit]] }
+      Stub[Test, Id].foo() shouldBe List.empty
     }
   }
 }

@@ -6,7 +6,7 @@ import scala.reflect.macros.blackbox
 
 /**
   * Macro to produce an instance of a trait parameterised on some F[_],
-  * that just logs any function calls it receives and returns nothing.
+  * that just returns a string representation of which methods were called
   *
   * This is pretty useless on its own but if you've derived a FunctorK instance
   * for your trait you can map that string into a Const, which has an Applicative instance
@@ -26,21 +26,17 @@ object Spy {
     }
 
     val traitInfo = tt.tpe.typeSymbol.asClass
-    val methods = tt.tpe.decls.collect { case d if d.isMethod && d.isAbstract => d.asMethod }
+    val utils = new Utilities[c.type](c)
 
-    val methodImplementations = methods.map { method =>
-
-      val params: List[List[Tree]] =
-        method.paramLists.map(_.map { symbol =>
-          val mods = if (symbol.isImplicit) Modifiers(Flag.IMPLICIT) else Modifiers()
-          q"$mods val ${symbol.asTerm.name}: ${symbol.typeSignature}"
-        })
-
-      val typeParams: List[c.Tree] =
-        method.typeParams.map(tp => internal.typeDef(tp))
+    utils.mapMethods[T, StringK] { method =>
+     val typeParams = utils.typeParams(method)
 
       val typeParamStrings =
-        if (typeParams.nonEmpty) s"[${method.typeParams.map(_.asType.name.toString).mkString(",")}]" else ""
+        if (typeParams.nonEmpty) {
+          s"[${method.typeParams.map(_.asType.name.toString).mkString(",")}]"
+        } else {
+          ""
+        }
 
       val paramStrings: Tree =
         method.paramLists
@@ -48,20 +44,7 @@ object Spy {
           .reduceOption((a, b) => q"$a + $b")
           .getOrElse(q"""""""") // poetry
 
-      q"""
-         def ${method.name}[..$typeParams](...$params): StringK[${method.returnType}] =
-          ${traitInfo.name.toString} + "." + ${method.name.toString + typeParamStrings} + ...$paramStrings
-       """
+      q"""${traitInfo.name.toString} + "." + ${method.name.toString + typeParamStrings} + ...$paramStrings"""
     }
-
-    c.Expr(
-      q"""
-       import _root_.io.tvc.tagless.Spy.StringK
-       new ${traitInfo.name}[StringK] {
-          ..$methodImplementations
-          type T = String
-       }
-     """
-    )
   }
 }

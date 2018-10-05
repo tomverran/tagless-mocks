@@ -6,7 +6,7 @@ version := "0.1"
 
 scalaVersion := "2.12.6"
 
-scalacOptions += "-Ypartial-unification"
+scalacOptions ++= List("-feature", "-Ypartial-unification")
 
 libraryDependencies ++=  Seq(
   "org.scala-lang" % "scala-reflect" % scalaVersion.value,

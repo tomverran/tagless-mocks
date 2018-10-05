@@ -2,7 +2,7 @@ package io.tvc.tagless
 
 import scala.language.experimental.macros
 import scala.language.higherKinds
-import scala.reflect.macros.whitebox
+import scala.reflect.macros.blackbox
 
 /**
   * Macro to produce an instance of a trait parameterised on some F[_],
@@ -13,7 +13,7 @@ object Stub {
 
   def apply[T[_[_]], F[_]]: T[F] = macro stubImpl[T, F]
 
-  def stubImpl[T[_[_]], F[_]](c: whitebox.Context)(
+  def stubImpl[T[_[_]], F[_]](c: blackbox.Context)(
     implicit
     T: c.WeakTypeTag[T[F]],
     F: c.WeakTypeTag[F[Unit]]

@@ -2,7 +2,7 @@ package io.tvc.tagless
 
 import scala.language.experimental.macros
 import scala.language.higherKinds
-import scala.reflect.macros.whitebox
+import scala.reflect.macros.blackbox
 
 /**
   * Macro to produce an instance of a trait parameterised on some F[_],
@@ -17,7 +17,7 @@ object Spy {
 
   def apply[T[_[_]]]: T[StringK] = macro spyImpl[T]
 
-  def spyImpl[T[_[_]]](c: whitebox.Context)(implicit tt: c.WeakTypeTag[T[StringK]]): c.Expr[T[StringK]] = {
+  def spyImpl[T[_[_]]](c: blackbox.Context)(implicit tt: c.WeakTypeTag[T[StringK]]): c.Expr[T[StringK]] = {
     import c.universe._
 
     def concatParams(pl: List[c.Symbol]): c.universe.Tree = {

@@ -1,6 +1,7 @@
 package io.tvc.tagless
 
-import io.tvc.tagless.Spy.StringK
+import cats.Show
+import cats.instances.string._
 import org.scalatest.{Matchers, WordSpec}
 
 import scala.language.higherKinds
@@ -34,5 +35,17 @@ class SpyTest extends WordSpec with Matchers {
       trait Test[F[_]] { def foo[A, B, C](a: A): F[Unit] }
       Spy[Test].foo("bar") shouldBe "Test.foo[A,B,C](bar)"
     }
+
+    "Work with common or garden implicit parameters" in {
+      trait Test[F[_]] { def foo[A](a: A)(implicit show: Show[A]): F[Unit] }
+      Spy[Test].foo[String]("bar") shouldBe s"Test.foo[A](bar)(${Show[String].toString})"
+    }
+
+    "Work with type bounds" in {
+      trait Test[F[_]] { def foo[A: Show](a: A): F[Unit] }
+      Spy[Test].foo[String]("bar") shouldBe s"Test.foo[A](bar)(${Show[String].toString})"
+    }
+
+
   }
 }

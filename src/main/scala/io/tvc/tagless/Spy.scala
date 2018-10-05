@@ -31,7 +31,10 @@ object Spy {
     val methodImplementations = methods.map { method =>
 
       val params: List[List[Tree]] =
-        method.paramLists.map(_.map(s => q"val ${s.asTerm.name}: ${s.typeSignature}"))
+        method.paramLists.map(_.map { symbol =>
+          val mods = if (symbol.isImplicit) Modifiers(Flag.IMPLICIT) else Modifiers()
+          q"$mods val ${symbol.asTerm.name}: ${symbol.typeSignature}"
+        })
 
       val typeParams: List[c.Tree] =
         method.typeParams.map(tp => internal.typeDef(tp))
